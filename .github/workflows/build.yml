@@ -1,0 +1,32 @@
+name: Build Nginx 1.30.4
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run update.sh
+        run: |
+          chmod +x ./update.sh
+          ./update.sh
+
+      - name: Build Docker Image
+        run: |
+          cd stable/alpine-perl
+          docker build -t nginx:1.30.4-alpine-perl .
+
+      - name: Save Docker Image
+        run: |
+          docker save nginx:1.30.4-alpine-perl | gzip > nginx-1.30.4-alpine-perl.tar.gz
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nginx-1.30.4-alpine-perl
+          path: nginx-1.30.4-alpine-perl.tar.gz
+          retention-days: 5
